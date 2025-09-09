@@ -36,7 +36,7 @@
     .stage{
       position:relative;
       width:min(900px,100%);
-      min-height:360px; /* taller to fit higher flight */
+      min-height:360px;
       background: var(--card);
       border-radius:16px;
       box-shadow:0 10px 24px rgba(0,0,0,.10);
@@ -108,6 +108,14 @@
     const stage = document.getElementById('stage');
     const counter = document.getElementById('n');
 
+    const KEY = 'skydio-clicks';   // localStorage key
+    let clicks = Number(localStorage.getItem(KEY) || '0');
+    counter.textContent = clicks;
+
+    function saveClicks() {
+      localStorage.setItem(KEY, String(clicks));
+    }
+
     function saySkydio(){
       try{
         const msg = new SpeechSynthesisUtterance('Skydio');
@@ -117,7 +125,9 @@
     }
 
     function increment(){
-      counter.textContent = String((+counter.textContent || 0) + 1);
+      clicks += 1;
+      counter.textContent = clicks;
+      saveClicks();
       if (navigator?.vibrate) navigator.vibrate(12);
     }
 
@@ -144,7 +154,6 @@
       stage.appendChild(s);
       stage.appendChild(d);
 
-      // 1) Takeoff higher (-160px)
       await Promise.all([
         d.animate(
           [
@@ -162,7 +171,6 @@
         ).finished
       ]);
 
-      // 2) Hover higher (-160 to -176px)
       await d.animate(
         [
           { transform:'translate(-50%, -160px) scale(.75)' },
@@ -172,7 +180,6 @@
         { duration: 1200, iterations: 2, easing: 'ease-in-out' }
       ).finished;
 
-      // 3) Fly right
       const flyDistance = rStage.width + 240;
       await Promise.all([
         d.animate(
